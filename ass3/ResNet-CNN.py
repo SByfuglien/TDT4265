@@ -13,15 +13,6 @@ class ResNetCNN(CNN):
         super().__init__()
 
     def model_construction(self, learning_rate):
-        vgg = keras.applications.resnet50.ResNet50(include_top=False,
-                                             weights='imagenet',
-                                             input_shape=self.X_train.shape[1:])
-        for layer in vgg.layers[:-2]:
-            layer.trainable = False
-        self.model.add(vgg)
-        self.model.add(Flatten())
-        self.model.add(Dense(10, activation="softmax"))
-
         resnet = resnet50.ResNet50(include_top=False,
                           weights='imagenet',
                           input_shape=self.X_train.shape[1:])
@@ -43,14 +34,15 @@ class ResNetCNN(CNN):
 
 def main():
     start = time.time()
-    learning_rate = 0.1
+    learning_rate = 0.003
     num_epochs = 10
     batch_size = 64
     cnn = ResNetCNN()
     cnn.setup()
     cnn.model_construction(learning_rate)
     cnn.model_train(num_epochs, batch_size, data_aug=True)
-    cnn.model_analysis()
+    # cnn.model_analysis()
+    cnn.model.save('models/ResNet-CNN')
 
     end = time.time()
     print("elapsed time = {}".format(end - start))

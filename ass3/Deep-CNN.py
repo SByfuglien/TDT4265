@@ -79,10 +79,11 @@ def main():
     cnn.setup()
     cnn.model_construction(learning_rate)
     cnn.model_train(num_epochs, batch_size)
-    cnn.model_analysis()
+    # cnn.model_analysis()
+    cnn.model.save('models/Deep-CNN')
 
     end = time.time()
-    print("elapsed time = {}".format(end - start))
+    print("elapsed time = {:04.2f}".format(end - start))
 
 
 if __name__ == "__main__":

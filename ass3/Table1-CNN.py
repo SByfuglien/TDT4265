@@ -38,14 +38,14 @@ class table1(CNN):
 
 def main():
     learning_rate = 0.003
-    num_epochs = 2
+    num_epochs = 10
     batch_size = 64
     cnn = table1()
     cnn.setup()
     cnn.model_construction(learning_rate)
-    cnn.model_train(num_epochs, batch_size, data_aug=False)
-    cnn.model_analysis()
-
+    cnn.model_train(num_epochs, batch_size, data_aug=True)
+    # cnn.model_analysis()
+    cnn.model.save('models/Table1-CNN')
 
 if __name__ == "__main__":
     main()
