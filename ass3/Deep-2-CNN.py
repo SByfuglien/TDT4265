@@ -1,81 +1,60 @@
 from CNN import CNN
 import keras
 from keras.layers import Dense, Flatten, Dropout, Activation, BatchNormalization, Conv2D, MaxPooling2D
-from keras.optimizers import SGD
+from keras.optimizers import Adam
+from keras.initializers import glorot_normal
 
 import time
 
 
-class DeepCNN(CNN):
+class Deep2CNN(CNN):
 
     def __init__(self):
         super().__init__()
 
     def model_construction(self, learning_rate):
-        self.model.add(Conv2D(64, (3, 3), input_shape=self.X_train.shape[1:], padding='same'))
+        self.model.add(Conv2D(32, (3, 3), input_shape=self.X_train.shape[1:], padding='same',
+                              kernel_initializer=glorot_normal(seed=None)))
         self.model.add(Activation('elu'))
         self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.1))
+        self.model.add(Dropout(0.02))
         self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
         self.model.add(Conv2D(64, (3, 3), padding='same'))
         self.model.add(Activation('elu'))
         self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.1))
+        self.model.add(Dropout(0.02))
         self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
         self.model.add(Conv2D(128, (3, 3), padding='same'))
         self.model.add(Activation('elu'))
         self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.2))
+        self.model.add(Dropout(0.02))
         self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-
-        self.model.add(Conv2D(128, (3, 3), padding='same'))
-        self.model.add(Activation('elu'))
-        self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.2))
-        self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
-
-        self.model.add(Conv2D(256, (3, 3), padding='same'))
-        self.model.add(Activation('elu'))
-        self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.4))
-        self.model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-
-        self.model.add(Conv2D(256, (3, 3), padding='same'))
-        self.model.add(Activation('elu'))
-        self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.4))
-        self.model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
 
         self.model.add(Flatten())
 
-        self.model.add(Dense(1024))
+        self.model.add(Dense(512))
         self.model.add(Activation('elu'))
         self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.5))
-
-        self.model.add(Dense(1024))
-        self.model.add(Activation('elu'))
-        self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.5))
+        self.model.add(Dropout(0.2))
 
         self.model.add(Dense(10))
         self.model.add(Activation('softmax'))
 
-        sgd = SGD(lr=learning_rate, decay=1e-6, momentum=0.9, nesterov=True)
+        adam = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=None, decay=1e-6, amsgrad=True)
         self.model.compile(loss=keras.losses.categorical_crossentropy,
-                           optimizer=sgd,
+                           optimizer=adam,
                            metrics=['accuracy'])
         self.model.summary()
 
 
 def main():
     start = time.time()
-    learning_rate = 0.003
+    learning_rate = 0.005
     num_epochs = 10
     batch_size = 64
-    cnn = DeepCNN()
+    cnn = Deep2CNN()
     cnn.setup()
     cnn.model_construction(learning_rate)
     cnn.model_train(num_epochs, batch_size, data_aug=True)
