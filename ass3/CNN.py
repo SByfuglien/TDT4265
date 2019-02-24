@@ -1,12 +1,26 @@
 import keras
+from keras.callbacks import Callback
 from keras.datasets import cifar10
-from keras.models import Sequential
+from keras.models import Sequential, load_model
 import numpy as np
 from collections import Counter
 import matplotlib.pyplot as plt
 from sklearn import metrics
 import seaborn as sn
 import pandas as pd
+import json
+
+class TestCallback(Callback):
+	def __init__(self, test_data, cnn):
+		self.test_data = test_data
+		self.cnn = cnn
+
+	def on_epoch_end(self, epoch, logs={}):
+		x, y = self.test_data
+		loss, acc = self.model.evaluate(x, y, verbose=0)
+		print('\nTesting loss: {}, acc: {}\n'.format(loss, acc))
+		self.cnn.test_acc.append(acc)
+		self.cnn.test_loss.append(loss)
 
 
 class CNN:
@@ -21,6 +35,8 @@ class CNN:
 		self.model = Sequential()
 		# Used to visualize images in the analysis method
 		self.vanilla_X_test = self.X_test
+		self.test_acc = []
+		self.test_loss = []
 
 	def visualize_dataset(self, visualize_bool, statistics_bool, class_distribution_bool):
 		# Visualize some images
@@ -94,20 +110,29 @@ class CNN:
 																	width_shift_range=0.1,
 																	height_shift_range=0.1)
 			data_gen.fit(self.X_train)
-			self.model.fit_generator(data_gen.flow(self.X_train, self.Y_train, batch_size=batch_size),
+			history = self.model.fit_generator(data_gen.flow(self.X_train, self.Y_train, batch_size=batch_size),
 									 steps_per_epoch=len(self.X_train) / batch_size, epochs=num_epochs,
-									 validation_data=(self.X_val, self.Y_val), verbose=2)
+									 validation_data=(self.X_val, self.Y_val), verbose=2,
+									 callbacks=[TestCallback((self.X_test, self.Y_test), self)])
+			with open('models/history.json', 'w+') as f:
+				json.dump({**history.history, **{'test_loss' : self.test_loss, 'test_acc' : self.test_acc}}, f)
+
+
 		# Training the model the usual way
 		else:
-			self.model.fit(self.X_train, self.Y_train,
+			history = self.model.fit(self.X_train, self.Y_train,
 						   batch_size=batch_size,
 						   epochs=num_epochs,
 						   verbose=2,
-						   validation_data=(self.X_val, self.Y_val))
+						   validation_data=(self.X_val, self.Y_val),
+						   callbacks=[TestCallback((self.X_test, self.Y_test), self)])
+			with open('models/history.json', 'w+') as f:
+				json.dump({**history.history, **{'test_loss' : self.test_loss, 'test_acc' : self.test_acc}}, f)
 
-	def model_analysis(self, loss_bool=False, acc_bool=True, comp_bool=True):
+	def model_analysis(self, loss_bool=False, acc_bool=True, comp_bool=True, history=None):
 		# Loss history
-		history = self.model.history.history
+		if history is None:
+			history = self.model.history.history
 		if loss_bool:
 			plt.figure(figsize=(12, 8))
 			plt.plot(history["val_loss"], label="Validation loss")
@@ -162,14 +187,15 @@ class CNN:
 		plt.ylabel("F1 score")
 		plt.bar(x, f1)
 
-		# Using labraries to plot the confusion matrix
+		# Using libraries to plot the confusion matrix
 		df_cm = pd.DataFrame(cm, index=range(10),
 							 columns=range(10))
 		plt.figure(figsize=(10, 7))
 		sn.heatmap(df_cm, annot=True, fmt='.5g')
 
 		# Compare the test loss on our previous plot.
-		history = self.model.history.history
+		if history is None:
+			history = self.model.history.history
 		if comp_bool:
 			plt.figure(figsize=(12, 8))
 			plt.plot(history["val_loss"], label="Validation loss")
@@ -178,8 +204,33 @@ class CNN:
 			plt.legend()
 		return final_accuracy
 
+	@staticmethod
+	def loaded_model_analysis(history, loss_bool=True, acc_bool=True):
+		# Loss history
+		if loss_bool:
+			plt.figure(figsize=(12, 8))
+			plt.plot(history["val_loss"], label="Validation loss")
+			plt.plot(history["test_loss"], label="Test loss")
+			plt.plot(history["loss"], label="Training loss")
+			plt.legend()
+
+		# Accuracy history
+		if acc_bool:
+			plt.figure(figsize=(12, 8))
+			plt.plot(history["val_acc"], label="Validation accuracy")
+			plt.plot(history["test_acc"], label="Test accuracy")
+			plt.plot(history["acc"], label="Training accuracy")
+			plt.legend()
+
+
 	def setup(self, visualize_bool=False, statistics_bool=False, class_distribution_bool=False):
 		self.visualize_dataset(visualize_bool, statistics_bool, class_distribution_bool)
 		self.data_pre_processing()
 		self.change_data_shape()
 		self.split_dataset()
+
+CNN_1 = CNN()
+CNN_1.model = load_model('models/Deep-CNN1')
+with open('models/history.json', 'r') as F:
+	HISTORY = json.loads(F.read())
+CNN_1.loaded_model_analysis(history=HISTORY)
