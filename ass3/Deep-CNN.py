@@ -12,7 +12,7 @@ class DeepCNN(CNN):
         super().__init__()
 
     def model_construction(self, learning_rate):
-        self.model.add(Conv2D(64, (3, 3), input_shape=self.X_train.shape[1:], padding='same'))
+        self.model.add(Conv2D(32, (3, 3), input_shape=self.X_train.shape[1:], padding='same'))
         self.model.add(Activation('elu'))
         self.model.add(BatchNormalization())
         self.model.add(Dropout(0.1))
@@ -36,29 +36,12 @@ class DeepCNN(CNN):
         self.model.add(Dropout(0.2))
         self.model.add(MaxPooling2D(pool_size=(2, 2), strides=(2, 2)))
 
-        self.model.add(Conv2D(256, (3, 3), padding='same'))
-        self.model.add(Activation('elu'))
-        self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.4))
-        self.model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-
-        self.model.add(Conv2D(256, (3, 3), padding='same'))
-        self.model.add(Activation('elu'))
-        self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.4))
-        self.model.add(MaxPooling2D(pool_size=(2, 2), padding='same'))
-
         self.model.add(Flatten())
 
-        self.model.add(Dense(1024))
+        self.model.add(Dense(512))
         self.model.add(Activation('elu'))
         self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.5))
-
-        self.model.add(Dense(1024))
-        self.model.add(Activation('elu'))
-        self.model.add(BatchNormalization())
-        self.model.add(Dropout(0.5))
+        self.model.add(Dropout(0.2))
 
         self.model.add(Dense(10))
         self.model.add(Activation('softmax'))
@@ -78,8 +61,8 @@ def main():
     cnn = DeepCNN()
     cnn.setup()
     cnn.model_construction(learning_rate)
-    cnn.model_train(num_epochs, batch_size, data_aug=True)
-    # cnn.model_analysis()
+    cnn.model_train(num_epochs, batch_size, data_aug=False)
+    cnn.model_analysis()
     cnn.model.save('models/Deep-CNN')
 
     end = time.time()

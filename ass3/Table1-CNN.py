@@ -44,7 +44,7 @@ def main():
     cnn.setup()
     cnn.model_construction(learning_rate)
     cnn.model_train(num_epochs, batch_size, data_aug=True)
-    # cnn.model_analysis()
+    cnn.model_analysis()
     cnn.model.save('models/Table1-CNN')
 
 if __name__ == "__main__":

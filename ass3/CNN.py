@@ -213,6 +213,7 @@ class CNN:
 			plt.plot(history["test_loss"], label="Test loss")
 			plt.plot(history["loss"], label="Training loss")
 			plt.legend()
+			plt.show()
 
 		# Accuracy history
 		if acc_bool:
@@ -221,7 +222,7 @@ class CNN:
 			plt.plot(history["test_acc"], label="Test accuracy")
 			plt.plot(history["acc"], label="Training accuracy")
 			plt.legend()
-
+			plt.show()
 
 	def setup(self, visualize_bool=False, statistics_bool=False, class_distribution_bool=False):
 		self.visualize_dataset(visualize_bool, statistics_bool, class_distribution_bool)
@@ -230,7 +231,7 @@ class CNN:
 		self.split_dataset()
 
 CNN_1 = CNN()
-CNN_1.model = load_model('models/Deep-CNN1')
+CNN_1.model = load_model('models/Table1-CNN')
 with open('models/history.json', 'r') as F:
 	HISTORY = json.loads(F.read())
 CNN_1.loaded_model_analysis(history=HISTORY)

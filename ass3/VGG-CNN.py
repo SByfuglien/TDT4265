@@ -1,7 +1,7 @@
 from CNN import CNN
 import keras
 from keras.layers import Dense, Flatten
-from keras.optimizers import SGD
+from keras.optimizers import Adam
 from keras.applications import vgg19
 
 import time
@@ -26,18 +26,18 @@ class VGGCNN(CNN):
 
         self.model.add(Dense(10, activation="softmax"))
 
-        sgd = SGD(lr=learning_rate, decay=1e-6, momentum=0.9, nesterov=True)
+        adam = Adam(lr=learning_rate, beta_1=0.9, beta_2=0.999, epsilon=None, decay=1e-6, amsgrad=True)
         self.model.compile(loss=keras.losses.categorical_crossentropy,
-                           optimizer=sgd,
+                           optimizer=adam,
                            metrics=['accuracy'])
         self.model.summary()
 
 
 def main():
     start = time.time()
-    learning_rate = 0.003
+    learning_rate = 0.0005
     num_epochs = 10
-    batch_size = 64
+    batch_size = 32
     cnn = VGGCNN()
     cnn.setup()
     cnn.model_construction(learning_rate)
