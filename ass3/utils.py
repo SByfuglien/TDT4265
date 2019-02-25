@@ -9,7 +9,7 @@ def to_cuda(elements):
         The same list transferred to GPU memory
     """
 
-    if torch.cuda.is_available(): # Checks if a GPU is available for pytorch
+    if False: # Checks if a GPU is available for pytorch
         if isinstance(elements, (list, tuple)):
             return [x.cuda() for x in elements] # Transfer each index of the list to GPU memory
         return elements.cuda()
