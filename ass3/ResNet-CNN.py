@@ -1,8 +1,9 @@
 from CNN import CNN
 import keras
-from keras.layers import Dense, Flatten
+from keras.layers import Dense
 from keras.optimizers import SGD
-from keras_applications import resnet50
+from keras.applications import resnet50
+
 
 import time
 
@@ -15,13 +16,12 @@ class ResNetCNN(CNN):
     def model_construction(self, learning_rate):
         resnet = resnet50.ResNet50(include_top=False,
                           weights='imagenet',
-                          input_shape=self.X_train.shape[1:])
+                          input_shape=(224, 224, 3),
+                          pooling='max')
         for layer in resnet.layers[:-5]:
             layer.trainable = False
 
         self.model.add(resnet)
-
-        self.model.add(Flatten())
 
         self.model.add(Dense(10, activation="softmax"))
 

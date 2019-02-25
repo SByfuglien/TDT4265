@@ -108,7 +108,7 @@ class CNN:
 			data_gen = keras.preprocessing.image.ImageDataGenerator(rotation_range=15,
 																	horizontal_flip=True,
 																	width_shift_range=0.1,
-																	height_shift_range=0.1)
+																	height_shift_range=0.1,)
 			data_gen.fit(self.X_train)
 			history = self.model.fit_generator(data_gen.flow(self.X_train, self.Y_train, batch_size=batch_size),
 									 steps_per_epoch=len(self.X_train) / batch_size, epochs=num_epochs,
@@ -209,20 +209,26 @@ class CNN:
 		# Loss history
 		if loss_bool:
 			plt.figure(figsize=(12, 8))
+			plt.plot(history["loss"], label="Training loss")
 			plt.plot(history["val_loss"], label="Validation loss")
 			plt.plot(history["test_loss"], label="Test loss")
-			plt.plot(history["loss"], label="Training loss")
 			plt.legend()
-			plt.show()
 
 		# Accuracy history
 		if acc_bool:
 			plt.figure(figsize=(12, 8))
+			plt.plot(history["acc"], label="Training accuracy")
 			plt.plot(history["val_acc"], label="Validation accuracy")
 			plt.plot(history["test_acc"], label="Test accuracy")
-			plt.plot(history["acc"], label="Training accuracy")
 			plt.legend()
-			plt.show()
+
+		print("The final loss on the training set set is: {:04.2f}".format(history["loss"][-1]))
+		print("The final loss on the validation set is: {:04.2f}".format(history["val_loss"][-1]))
+		print("The final loss on the test set is: {:04.2f}".format(history["test_loss"][-1]))
+		print("The final accuracy on the training set is: {:04.2f}".format(history["acc"][-1]))
+		print("The final accuracy on the validation set is: {:04.2f}".format(history["val_acc"][-1]))
+		print("The final accuracy on the test set is: {:04.f}".format(history["test_acc"][-1]))
+
 
 	def setup(self, visualize_bool=False, statistics_bool=False, class_distribution_bool=False):
 		self.visualize_dataset(visualize_bool, statistics_bool, class_distribution_bool)
@@ -230,8 +236,8 @@ class CNN:
 		self.change_data_shape()
 		self.split_dataset()
 
-#CNN_1 = CNN()
-#CNN_1.model = load_model('models/Table1-CNN')
-#with open('models/history.json', 'r') as F:
-#	HISTORY = json.loads(F.read())
-#CNN_1.loaded_model_analysis(history=HISTORY)
+# CNN_1 = CNN()
+# CNN_1.model = load_model('models/Deep-CNN1')
+# with open('models/history.json', 'r') as F:
+# 	HISTORY = json.loads(F.read())
+# CNN_1.loaded_model_analysis(history=HISTORY)

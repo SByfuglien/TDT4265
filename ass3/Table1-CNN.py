@@ -4,6 +4,7 @@ from keras.optimizers import SGD
 from keras.losses import categorical_crossentropy
 
 
+
 class table1(CNN):
 
     def __init__(self):
@@ -46,6 +47,7 @@ def main():
     cnn.model_train(num_epochs, batch_size, data_aug=True)
     cnn.model_analysis()
     cnn.model.save('models/Table1-CNN')
+
 
 if __name__ == "__main__":
     main()
