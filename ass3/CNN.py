@@ -213,6 +213,7 @@ class CNN:
 			plt.plot(history["val_loss"], label="Validation loss")
 			plt.plot(history["test_loss"], label="Test loss")
 			plt.legend()
+			plt.show()
 
 		# Accuracy history
 		if acc_bool:
@@ -221,13 +222,14 @@ class CNN:
 			plt.plot(history["val_acc"], label="Validation accuracy")
 			plt.plot(history["test_acc"], label="Test accuracy")
 			plt.legend()
+			plt.show()
 
 		print("The final loss on the training set set is: {:04.2f}".format(history["loss"][-1]))
 		print("The final loss on the validation set is: {:04.2f}".format(history["val_loss"][-1]))
 		print("The final loss on the test set is: {:04.2f}".format(history["test_loss"][-1]))
 		print("The final accuracy on the training set is: {:04.2f}".format(history["acc"][-1]))
 		print("The final accuracy on the validation set is: {:04.2f}".format(history["val_acc"][-1]))
-		print("The final accuracy on the test set is: {:04.f}".format(history["test_acc"][-1]))
+		print("The final accuracy on the test set is: {:04.2f}".format(history["test_acc"][-1]))
 
 
 	def setup(self, visualize_bool=False, statistics_bool=False, class_distribution_bool=False):
