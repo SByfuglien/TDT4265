@@ -230,8 +230,8 @@ class CNN:
 		self.change_data_shape()
 		self.split_dataset()
 
-CNN_1 = CNN()
-CNN_1.model = load_model('models/Table1-CNN')
-with open('models/history.json', 'r') as F:
-	HISTORY = json.loads(F.read())
-CNN_1.loaded_model_analysis(history=HISTORY)
+#CNN_1 = CNN()
+#CNN_1.model = load_model('models/Table1-CNN')
+#with open('models/history.json', 'r') as F:
+#	HISTORY = json.loads(F.read())
+#CNN_1.loaded_model_analysis(history=HISTORY)
