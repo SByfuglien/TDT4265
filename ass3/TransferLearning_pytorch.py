@@ -41,9 +41,8 @@ class Trainer:
 		self.epochs = 10
 		self.batch_size = 32
 		self.learning_rate = 5e-4
-		self.early_stop_count = 3
+		self.early_stop_count = 10
 
-		# Architecture
 
 		# Since we are doing multi-class classification, we use the CrossEntropyLoss
 		self.loss_criterion = nn.CrossEntropyLoss()
