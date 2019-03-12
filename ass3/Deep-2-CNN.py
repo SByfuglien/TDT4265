@@ -3,7 +3,6 @@ import keras
 from keras.layers import Dense, Flatten, Dropout, Activation, BatchNormalization, Conv2D, MaxPooling2D
 from keras.optimizers import Adam
 from keras.initializers import glorot_normal
-
 import time
 
 
@@ -51,7 +50,7 @@ class Deep2CNN(CNN):
 
 def main():
     start = time.time()
-    learning_rate = 0.005
+    learning_rate = 0.003
     num_epochs = 10
     batch_size = 64
     cnn = Deep2CNN()

@@ -5,6 +5,7 @@ import torchvision
 from torch import nn
 from dataloaders import load_cifar10
 from utils import to_cuda, compute_loss_and_accuracy
+import json
 
 
 class Model(nn.Module):
@@ -37,12 +38,11 @@ class Trainer:
 		Set hyperparameters, architecture, tracking variables etc.
 		"""
 		# Define hyperparameters
-		self.epochs = 20
+		self.epochs = 10
 		self.batch_size = 32
 		self.learning_rate = 5e-4
-		self.early_stop_count = 3
+		self.early_stop_count = 10
 
-		# Architecture
 
 		# Since we are doing multi-class classification, we use the CrossEntropyLoss
 		self.loss_criterion = nn.CrossEntropyLoss()
@@ -180,3 +180,5 @@ if __name__ == "__main__":
 
 	print("Final test accuracy:", trainer.TEST_ACC[-trainer.early_stop_count])
 	print("Final validation accuracy:", trainer.VALIDATION_ACC[-trainer.early_stop_count])
+	with open('models/history_transfer_learning.json', 'w+') as f:
+		json.dump({'loss': trainer.TRAIN_LOSS, 'acc': trainer.TRAIN_ACC, 'val_loss': trainer.VALIDATION_LOSS, 'val_acc': trainer.VALIDATION_ACC, 'test_loss': trainer.TEST_LOSS, 'test_acc': trainer.TEST_ACC}, f)
