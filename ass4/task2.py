@@ -4,6 +4,7 @@ import json
 import copy
 from task2_tools import read_predicted_boxes, read_ground_truth_boxes
 
+
 def calculate_iou(prediction_box, gt_box):
 	"""Calculate intersection over union of single predicted and ground truth box.
 
@@ -91,16 +92,17 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
 	"""
 
 	matches = []
-	i = 0
 
 	for gt in gt_boxes:
 		iou = 0
+		best_pred = None
 		for p in prediction_boxes:
 			local_iou = calculate_iou(p, gt)
 			if local_iou >= iou_threshold and local_iou >= iou:
 				iou = local_iou
-				matches.append([iou, p, gt])
-				i += 1
+				best_pred = p
+		if best_pred is not None:
+			matches.append([iou, best_pred, gt])
 
 	# Sort all matches on IoU in descending order
 	matches = sorted(matches, key=lambda x: x[0], reverse=True)
@@ -128,15 +130,12 @@ def calculate_individual_image_result(prediction_boxes, gt_boxes, iou_threshold)
 	"""
 	# Find the bounding box matches with the highest IoU threshold
 
-	# Compute true positives, false positives, false negatives
-	false_positives = 0
-	false_negatives = 0
 	# Find best matches between prediction boxes and ground truth boxes.
 	match_prediction_boxes, match_gt_boxes = get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold)
-	true_positives = len(match_gt_boxes)
-	# Find ground truth boxed with had no accurate prediction.
 
-	false_negatives = len(gt_boxes)-true_positives
+	# Compute true positives, false positives, false negatives
+	true_positives = len(match_gt_boxes)
+	false_negatives = len(gt_boxes) - true_positives
 	false_positives = len(prediction_boxes) - true_positives
 
 	return {"true_pos": true_positives, "false_pos": false_positives, "false_neg": false_negatives}
@@ -206,10 +205,6 @@ def get_precision_recall_curve(all_prediction_boxes, all_gt_boxes, confidence_sc
 	Returns:
 		tuple: (precision, recall). Both np.array of floats.
 	"""
-	# Instead of going over every possible confidence score threshold to compute the PR
-	# curve, we will use an approximation
-	# DO NOT CHANGE. If you change this, the tests will not pass when we run the final
-	# evaluation
 	confidence_thresholds = np.linspace(0, 1, 500)
 	precision_array = []
 	recall_array = []
@@ -217,14 +212,16 @@ def get_precision_recall_curve(all_prediction_boxes, all_gt_boxes, confidence_sc
 		# Only keep predictions that are higher than the confidence threshold.
 		filtered_prediction_boxes = []
 		for i, prediction_boxes in enumerate(all_prediction_boxes):
-			filtered_prediction_boxes.append(np.array([prediction_box for j, prediction_box in enumerate(prediction_boxes)
-									if np.greater_equal(confidence_scores[i][j], threshold)]))
+			filtered_boxes = (np.array([prediction_box for j, prediction_box in enumerate(prediction_boxes)
+										if np.greater_equal(confidence_scores[i][j], threshold)]))
+			filtered_prediction_boxes.append(filtered_boxes)
 		# Calculate precision and recall.
 		precision, recall = calculate_precision_recall_all_images(filtered_prediction_boxes, all_gt_boxes,
 																  iou_threshold)
 		precision_array.append(precision)
 		recall_array.append(recall)
 	return np.array(precision_array), np.array(recall_array)
+
 
 def plot_precision_recall_curve(precisions, recalls):
 	"""Plots the precision recall curve.
@@ -257,23 +254,24 @@ def calculate_mean_average_precision(precision_levels, recall_levels):
 	Returns:
 		float: mean average precision
 	"""
-	recall = np.linspace(0.0, 1.0, 11)[::-1]
+	recall = np.linspace(0.0, 1.0, 11)
 	average_precision = 0
-	max_precision = 0
-	for i, r in enumerate(recall):
+	for r in recall:
+		max_precision = 0
 		# Find indices of recall levels higher than r.
 		rec = [index for index, value in enumerate(recall_levels) if value >= r]
 		# Find corresponding precision values from the indices.
 		pre = [precision_levels[j] for j in rec]
 		# If list of precision values is not empty and max value in list is higher than the current max,
 		# update max value.
-		if pre and max(pre) > max_precision:
+		if pre:
 			max_precision = max(pre)
 		if not pre:
 			max_precision = 0
 		average_precision += max_precision
 	average_precision /= 11
 	return average_precision
+
 
 def mean_average_precision(ground_truth_boxes, predicted_boxes):
 	""" Calculates the mean average precision over the given dataset
