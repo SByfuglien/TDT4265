@@ -128,8 +128,6 @@ def calculate_individual_image_result(prediction_boxes, gt_boxes, iou_threshold)
 		dict: containing true positives, false positives, true negatives, false negatives
 			{"true_pos": int, "false_pos": int, "false_neg": int}
 	"""
-	# Find the bounding box matches with the highest IoU threshold
-
 	# Find best matches between prediction boxes and ground truth boxes.
 	match_prediction_boxes, match_gt_boxes = get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold)
 
@@ -160,10 +158,6 @@ def calculate_precision_recall_all_images(all_prediction_boxes, all_gt_boxes, io
 	Returns:
 		tuple: (precision, recall). Both float.
 	"""
-	# Find total true positives, false positives and false negatives
-	# over all images
-
-	# Compute precision, recall
 	true_positives = 0
 	false_positives = 0
 	false_negatives = 0
@@ -234,7 +228,6 @@ def plot_precision_recall_curve(precisions, recalls):
 	Returns:
 		None
 	"""
-	# No need to edit this code.
 	plt.figure(figsize=(20, 20))
 	plt.plot(recalls, precisions)
 	plt.xlabel("Recall")
@@ -290,7 +283,6 @@ def mean_average_precision(ground_truth_boxes, predicted_boxes):
 			}
 		}
 	"""
-	# DO NOT EDIT THIS CODE
 	all_gt_boxes = []
 	all_prediction_boxes = []
 	confidence_scores = []

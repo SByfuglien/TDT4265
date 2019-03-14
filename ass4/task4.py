@@ -103,8 +103,8 @@ def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold
 	best_indices = []
 	selection_not_found = True
 
+	# Use iou() to get the list of indices corresponding to boxes you keep
 	while selection_not_found:
-		# Use iou() to get the list of indices corresponding to boxes you keep
 		highest_score = -10000000000000000000000000000000000000000000000000000000000000
 		for i in nms_indices:
 			if scores[i] >= highest_score:
@@ -128,19 +128,6 @@ def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold
 
 	return selected_scores, selected_boxes, selected_classes
 
-"""""
-np.random.seed(0)
-scores = np.random.normal(size=(54,), loc=1, scale=4)
-boxes = np.random.normal(size=(54, 4), loc=1, scale=4)
-classes = np.random.normal(size=(54,), loc=1, scale=4)
-scores, boxes, classes = yolo_non_max_suppression(scores, boxes, classes)
-print("scores[2] = " + str(scores[2]))
-print("boxes[2] = " + str(boxes[2]))
-print("classes[2] = " + str(classes[2]))
-print("scores.shape = " + str(scores.shape))
-print("boxes.shape = " + str(boxes.shape))
-print("classes.shape = " + str(classes.shape))
-"""
 
 def yolo_eval(yolo_outputs, image_shape=(720., 1280.), max_boxes=10, score_threshold=.6, iou_threshold=.5):
 	"""
@@ -163,9 +150,6 @@ def yolo_eval(yolo_outputs, image_shape=(720., 1280.), max_boxes=10, score_thres
 		boxes -- np.array of shape (None, 4), predicted box coordinates
 		classes -- np.array of shape (None,), predicted class for each box
 	"""
-
-	### START CODE HERE ###
-
 	# Retrieve outputs of the YOLO model (≈1 line)
 	box_confidence = yolo_outputs[0]
 	boxes = yolo_outputs[1]
@@ -233,4 +217,3 @@ out_scores, out_boxes, out_classes = yolo_eval(yolo_outputs, image_shape)
 print('Found {} boxes'.format(len(out_boxes)))
 # Draw bounding boxes on the image
 draw_boxes(image, out_scores, out_boxes, out_classes)
-# Display the results in the notebook
