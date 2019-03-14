@@ -45,6 +45,33 @@ def yolo_filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
 	return scores, boxes, classes
 
 
+def iou(prediction_box, gt_box):
+	"""Calculate intersection over union of single predicted and ground truth box.
+
+	Args:
+		prediction_box (np.array of floats): location of predicted object as
+			[xmin, ymin, xmax, ymax]
+		gt_box (np.array of floats): location of ground truth object as
+			[xmin, ymin, xmax, ymax]
+
+		returns:
+			float: value of the intersection of union for the two boxes.
+	"""
+
+	# Location of intersecting box
+	I = [max(prediction_box[0], gt_box[0]),
+		 max(prediction_box[1], gt_box[1]),
+		 min(prediction_box[2], gt_box[2]),
+		 min(prediction_box[3], gt_box[3])]
+
+	# Area of intersection and union
+	areaI = (I[2] - I[0]) * (I[3] - I[1])
+	areaU = (prediction_box[2] - prediction_box[0]) * (prediction_box[3] - prediction_box[1]) + (gt_box[2] - gt_box[
+		0]) * (gt_box[3] - gt_box[1]) - areaI
+
+	return areaI / areaU
+
+
 def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold=0.5):
 	"""
 	Applies Non-max suppression (NMS) to set of boxes
@@ -57,6 +84,11 @@ def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold
 		max_boxes -- integer, maximum number of predicted boxes you'd like
 		iou_threshold -- real value, "intersection over union" threshold used for NMS filtering
 
+		Returns:
+		scores -- np.array of shape (None,), containing the class probability score for selected boxes
+		boxes -- np.array of shape (None, 4), containing (b_x, b_y, b_h, b_w) coordinates of selected boxes
+		classes -- np.array of shape (None,), containing the index of the class detected by the selected boxes
+
 	Returns:
 	scores -- tensor of shape (, None), predicted score for each box
 	boxes -- tensor of shape (4, None), predicted box coordinates
@@ -66,10 +98,49 @@ def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold
 	Note also that this function will transpose the shapes of scores, boxes, classes.
 	This is made for convenience.
 	"""
+	best_box = []
+	nms_indices = list(range(0, boxes.shape[0]))
+	best_indices = []
+	selection_not_found = True
 
+	while selection_not_found:
+		# Use iou() to get the list of indices corresponding to boxes you keep
+		highest_score = -10000000000000000000000000000000000000000000000000000000000000
+		for i in nms_indices:
+			if scores[i] >= highest_score:
+				highest_score = scores[i]
+				best_box = boxes[i]
+				index = i
+		if index in best_indices:
+			break
+		best_indices.append(index)
 
-	pass
+		for i in nms_indices:
+			if iou(boxes[i], best_box) >= iou_threshold:
+				nms_indices.remove(i)
+		if len(best_indices) == max_boxes:
+			selection_not_found = False
 
+	# Use index arrays to select only nms_indices from scores, boxes and classes
+	selected_scores = scores[best_indices]
+	selected_boxes = boxes[best_indices]
+	selected_classes = classes[best_indices]
+
+	return selected_scores, selected_boxes, selected_classes
+
+"""""
+np.random.seed(0)
+scores = np.random.normal(size=(54,), loc=1, scale=4)
+boxes = np.random.normal(size=(54, 4), loc=1, scale=4)
+classes = np.random.normal(size=(54,), loc=1, scale=4)
+scores, boxes, classes = yolo_non_max_suppression(scores, boxes, classes)
+print("scores[2] = " + str(scores[2]))
+print("boxes[2] = " + str(boxes[2]))
+print("classes[2] = " + str(classes[2]))
+print("scores.shape = " + str(scores.shape))
+print("boxes.shape = " + str(boxes.shape))
+print("classes.shape = " + str(classes.shape))
+"""
 
 def yolo_eval(yolo_outputs, image_shape=(720., 1280.), max_boxes=10, score_threshold=.6, iou_threshold=.5):
 	"""
@@ -163,4 +234,3 @@ print('Found {} boxes'.format(len(out_boxes)))
 # Draw bounding boxes on the image
 draw_boxes(image, out_scores, out_boxes, out_classes)
 # Display the results in the notebook
-imshow()
