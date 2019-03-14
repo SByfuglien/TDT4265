@@ -90,25 +90,22 @@ def get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold):
 			Each row includes [xmin, ymin, xmax, ymax]
 	"""
 
-	gt_matches = []
-	prediction_matches = []
+	matches = []
+	i = 0
 
-	# Find all possible matches with a IoU >= iou threshold
-	for i, gt in enumerate(gt_boxes):
+	for gt in gt_boxes:
 		iou = 0
-		prediction = None
 		for p in prediction_boxes:
 			local_iou = calculate_iou(p, gt)
 			if local_iou >= iou_threshold and local_iou >= iou:
-				prediction = p
 				iou = local_iou
-		if iou != 0 and prediction is not None:
-			gt_matches.append(gt)
-			prediction_matches.append(prediction)
+				matches.append([iou, p, gt])
+				i += 1
 
+	# Sort all matches on IoU in descending order
+	matches = sorted(matches, key=lambda x: x[0], reverse=True)
 
-	# Find all matches with the highest IoU threshold
-	return np.array(prediction_matches), np.array(gt_matches)
+	return np.asarray([i[1] for i in matches]), np.asarray([i[2] for i in matches])
 
 
 def calculate_individual_image_result(prediction_boxes, gt_boxes, iou_threshold):
@@ -138,34 +135,10 @@ def calculate_individual_image_result(prediction_boxes, gt_boxes, iou_threshold)
 	match_prediction_boxes, match_gt_boxes = get_all_box_matches(prediction_boxes, gt_boxes, iou_threshold)
 	true_positives = len(match_gt_boxes)
 	# Find ground truth boxed with had no accurate prediction.
-	# This can surely be written better!!?
-	no_match_gt_boxes = []
-	for gt_box in gt_boxes:
-		add = True
-		for i, match_gt_box in enumerate(match_gt_boxes):
-			if (gt_box == match_gt_box).all():
-				add = False
-				break
-		if add:
-			no_match_gt_boxes.append(gt_box)
-	for prediction_box in prediction_boxes:
-		max_iou_for_prediction = 0
-		if not no_match_gt_boxes:
-			break
-		for gt_box in no_match_gt_boxes:
-			# For each ground truth box that produced no match,
-			# loop through all prediction boxes in order to determine false positives and false negatives.
-			iou = calculate_iou(prediction_box, gt_box)
-			if iou > max_iou_for_prediction:
-				max_iou_for_prediction = iou
-		if max_iou_for_prediction > iou_threshold:
-			raise ValueError("iou calculation wrong, should be a true positive.")
-		elif max_iou_for_prediction > 0:
-			false_positives += 1
-		elif max_iou_for_prediction == 0:
-			false_negatives += 1
-		else:
-			raise ValueError("iou calculation wrong")
+
+	false_negatives = len(gt_boxes)-true_positives
+	false_positives = len(prediction_boxes) - true_positives
+
 	return {"true_pos": true_positives, "false_pos": false_positives, "false_neg": false_negatives}
 
 
@@ -246,7 +219,7 @@ def get_precision_recall_curve(all_prediction_boxes, all_gt_boxes, confidence_sc
 		for i, prediction_boxes in enumerate(all_prediction_boxes):
 			filtered_prediction_boxes.append(np.array([prediction_box for j, prediction_box in enumerate(prediction_boxes)
 									if np.greater_equal(confidence_scores[i][j], threshold)]))
-			# Calculate precision and recall.
+		# Calculate precision and recall.
 		precision, recall = calculate_precision_recall_all_images(filtered_prediction_boxes, all_gt_boxes,
 																  iou_threshold)
 		precision_array.append(precision)
