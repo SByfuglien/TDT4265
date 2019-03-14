@@ -27,27 +27,20 @@ def yolo_filter_boxes(box_confidence, boxes, box_class_probs, threshold=.6):
 	"""
 
 	# Step 1: Compute box scores
-
+	box_scores = box_confidence * box_class_probs
 
 	# Step 2: Find the box_classes thanks to the max box_scores, keep track of the corresponding score
-
+	box_classes = np.argmax(box_scores, axis=-1)
+	box_class_scores = np.amax(box_scores, axis=-1)
 
 	# Step 3: Create a filtering mask based on "box_class_scores" by using "threshold". The mask should have the
 	# same dimension as box_class_scores, and be True for the boxes you want to keep (with probability >= threshold)
-
+	confidence_mask = np.array(box_class_scores >= threshold)
+	print(confidence_mask)
 	# Step 4: Apply the mask to scores, boxes and classes
-
-	np.random.seed(0)
-	box_confidence = np.random.normal(size=(19, 19, 5, 1), loc=1, scale=4)
-	boxes = np.random.normal(size=(19, 19, 5, 4), loc=1, scale=4)
-	box_class_probs = np.random.normal(size=(19, 19, 5, 80), loc=1, scale=4)
-	scores, boxes, classes = yolo_filter_boxes(box_confidence, boxes, box_class_probs, threshold=0.5)
-	print("scores[2] = " + str(scores[2]))
-	print("boxes[2] = " + str(boxes[2]))
-	print("classes[2] = " + str(classes[2]))
-	print("scores.shape = " + str(scores.shape))
-	print("boxes.shape = " + str(boxes.shape))
-	print("classes.shape = " + str(classes.shape))
+	scores = box_class_scores[confidence_mask]
+	boxes = boxes[confidence_mask]
+	classes = box_classes[confidence_mask]
 
 	return scores, boxes, classes
 
@@ -74,24 +67,8 @@ def yolo_non_max_suppression(scores, boxes, classes, max_boxes=10, iou_threshold
 	This is made for convenience.
 	"""
 
-	nms_indices = []
-	# Use iou() to get the list of indices corresponding to boxes you keep
 
-	# Use index arrays to select only nms_indices from scores, boxes and classes
-
-	np.random.seed(0)
-	scores = np.random.normal(size=(54,), loc=1, scale=4)
-	boxes = np.random.normal(size=(54, 4), loc=1, scale=4)
-	classes = np.random.normal(size=(54,), loc=1, scale=4)
-	scores, boxes, classes = yolo_non_max_suppression(scores, boxes, classes)
-	print("scores[2] = " + str(scores[2]))
-	print("boxes[2] = " + str(boxes[2]))
-	print("classes[2] = " + str(classes[2]))
-	print("scores.shape = " + str(scores.shape))
-	print("boxes.shape = " + str(boxes.shape))
-	print("classes.shape = " + str(classes.shape))
-
-	return scores, boxes, classes
+	pass
 
 
 def yolo_eval(yolo_outputs, image_shape=(720., 1280.), max_boxes=10, score_threshold=.6, iou_threshold=.5):
@@ -119,34 +96,64 @@ def yolo_eval(yolo_outputs, image_shape=(720., 1280.), max_boxes=10, score_thres
 	### START CODE HERE ###
 
 	# Retrieve outputs of the YOLO model (≈1 line)
+	box_confidence = yolo_outputs[0]
+	boxes = yolo_outputs[1]
+	box_class_probs = yolo_outputs[2]
 
 	# Use one of the functions you've implemented to perform Score-filtering with a threshold of score_threshold (≈1 line)
+	scores, boxes, classes = yolo_filter_boxes(box_confidence, boxes, box_class_probs, score_threshold)
 
 	# Scale boxes back to original image shape.
+	boxes = scale_boxes(boxes, image_shape)
 
 	# Use one of the functions you've implemented to perform Non-max suppression with a threshold of iou_threshold (≈1 line)
-
-	np.random.seed(0)
-	yolo_outputs = (np.random.normal(size=(19, 19, 5, 1,), loc=1, scale=4),
-	                np.random.normal(size=(19, 19, 5, 4,), loc=1, scale=4),
-	                np.random.normal(size=(19, 19, 5, 80,), loc=1, scale=4))
-	scores, boxes, classes = yolo_eval(yolo_outputs)
-	print("scores[2] = " + str(scores[2]))
-	print("boxes[2] = " + str(boxes[2]))
-	print("classes[2] = " + str(classes[2]))
-	print("scores.shape = " + str(scores.shape))
-	print("boxes.shape = " + str(boxes.shape))
-	print("classes.shape = " + str(classes.shape))
+	scores, boxes, classes = yolo_non_max_suppression(scores, boxes, classes, max_boxes, iou_threshold)
 
 	return scores, boxes, classes
 
 
 # VALIDATION
+np.random.seed(0)
+BOX_CONFIDENCE = np.random.normal(size=(19, 19, 5, 1), loc=1, scale=4)
+BOXES = np.random.normal(size=(19, 19, 5, 4), loc=1, scale=4)
+BOX_CLASS_PROBS = np.random.normal(size=(19, 19, 5, 80), loc=1, scale=4)
+SCORES, BOXES, CLASSES = yolo_filter_boxes(BOX_CONFIDENCE, BOXES, BOX_CLASS_PROBS, threshold=0.5)
+print("scores[2] = " + str(SCORES[2]))
+print("boxes[2] = " + str(BOXES[2]))
+print("classes[2] = " + str(CLASSES[2]))
+print("scores.shape = " + str(SCORES.shape))
+print("boxes.shape = " + str(BOXES.shape))
+print("classes.shape = " + str(CLASSES.shape))
+
+np.random.seed(0)
+SCORES = np.random.normal(size=(54,), loc=1, scale=4)
+BOXES = np.random.normal(size=(54, 4), loc=1, scale=4)
+CLASSES = np.random.normal(size=(54,), loc=1, scale=4)
+SCORES, BOXES, CLASSES = yolo_non_max_suppression(SCORES, BOXES, CLASSES)
+print("scores[2] = " + str(SCORES[2]))
+print("boxes[2] = " + str(BOXES[2]))
+print("classes[2] = " + str(CLASSES[2]))
+print("scores.shape = " + str(SCORES.shape))
+print("boxes.shape = " + str(BOXES.shape))
+print("classes.shape = " + str(CLASSES.shape))
+
+np.random.seed(0)
+yolo_outputs = (np.random.normal(size=(19, 19, 5, 1,), loc=1, scale=4),
+				np.random.normal(size=(19, 19, 5, 4,), loc=1, scale=4),
+				np.random.normal(size=(19, 19, 5, 80,), loc=1, scale=4))
+SCORES, BOXES, CLASSES = yolo_eval(yolo_outputs)
+print("scores[2] = " + str(SCORES[2]))
+print("boxes[2] = " + str(BOXES[2]))
+print("classes[2] = " + str(CLASSES[2]))
+print("scores.shape = " + str(SCORES.shape))
+print("boxes.shape = " + str(BOXES.shape))
+print("classes.shape = " + str(CLASSES.shape))
+
 image = Image.open("test.jpg")
-box_confidence = np.load("box_confidence.npy")
-boxes = np.load("boxes.npy")
-box_class_probs = np.load("box_class_probs.npy")
-yolo_outputs = (box_confidence, boxes, box_class_probs)
+BOX_CONFIDENCE = np.load("box_confidence.npy")
+BOXES = np.load("boxes.npy")
+BOX_CLASS_PROBS = np.load("box_class_probs.npy")
+yolo_outputs = (BOX_CONFIDENCE, BOXES, BOX_CLASS_PROBS)
 
 image_shape = (720., 1280.)
 out_scores, out_boxes, out_classes = yolo_eval(yolo_outputs, image_shape)
