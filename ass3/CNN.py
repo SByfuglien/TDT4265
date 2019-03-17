@@ -11,6 +11,9 @@ import pandas as pd
 import json
 
 class TestCallback(Callback):
+	"""
+	Callback class to use for keeping track of accuracy and loss for training set during model training.
+	"""
 
 	def __init__(self, test_data, cnn):
 		self.test_data = test_data
@@ -25,6 +28,7 @@ class TestCallback(Callback):
 
 
 class CNN:
+	"""Base class for a CNN in Keras. Contains methods for pre-processing of dataset, visualization, training etc."""
 
 	def __init__(self):
 		(self.X_train, self.Y_train),(self.X_test, self.Y_test) = cifar10.load_data()
@@ -38,7 +42,16 @@ class CNN:
 		self.test_loss = []
 
 	def visualize_dataset(self, visualize_bool, statistics_bool, class_distribution_bool):
-		"""Visualizes the dataset by plotting a few images and printing statistics."""
+		"""Visualizes the dataset by plotting a few images and printing statistics.
+
+		Parameters:
+			visualize_bool : Boolean
+				Whether to visualize some o the images in the dataset.
+			statistics_bool : Boolean
+				Whether to show statistics for the dataset.
+			class_distribution_bool : Boolean
+				Whether to show class distribution of dataset.
+		"""
 		# Visualize some images
 		if visualize_bool:
 			for row in range(3):
@@ -102,7 +115,16 @@ class CNN:
 		self.Y_train = self.Y_train[idx_train]
 
 	def model_train(self, num_epochs, batch_size, data_aug=False):
-		"""Training the model and saving accuracy and loss history to json file."""
+		"""Training the model and saving accuracy and loss history to json file.
+
+		Parameters:
+			num_epochs : int
+				Number of epochs to train the model.
+			batch_size : int
+				Batch size used for gradient calculations.
+			data_aug : Boolean
+				Whether to use data augmentation during training.
+			"""
 		# Using real-time data augmentation to train the model.
 		if data_aug:
 			data_gen = keras.preprocessing.image.ImageDataGenerator(rotation_range=15,

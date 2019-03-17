@@ -45,7 +45,13 @@ torchvision.utils.save_image(to_visualize[:16], "img/filters_first_layer.png")
 torchvision.utils.save_image(to_visualize2[:16], "img/filters_last_layer.png")
 
 def loaded_model_analysis(history, history2=None, loss_bool=True, acc_bool=True):
-	"""Plotting loss and accuracy from dictionary loaded from file."""
+	"""Plotting loss and accuracy from dictionary loaded from file.
+	Parameters:
+		history : dict
+			Dictionary containing model history for training, validation and test loss and accuracy.
+		history2 : dict
+			Dictionary containing model history for training, validation and test loss and accuracy.
+	"""
 	# Loss history
 	if loss_bool:
 		plt.figure(figsize=(12, 8))

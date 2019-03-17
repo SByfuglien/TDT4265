@@ -203,9 +203,9 @@ def get_precision_recall_curve(all_prediction_boxes, all_gt_boxes, confidence_sc
 	precision_array = []
 	recall_array = []
 	for threshold in confidence_thresholds:
-		# Only keep predictions that are higher than the confidence threshold.
 		filtered_prediction_boxes = []
 		for i, prediction_boxes in enumerate(all_prediction_boxes):
+		# Only keep predictions that are higher than the confidence threshold.
 			filtered_boxes = (np.array([prediction_box for j, prediction_box in enumerate(prediction_boxes)
 										if np.greater_equal(confidence_scores[i][j], threshold)]))
 			filtered_prediction_boxes.append(filtered_boxes)
