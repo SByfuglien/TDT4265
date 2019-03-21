@@ -1,6 +1,6 @@
 import numpy as np
 from PIL import Image
-from matplotlib.pyplot import imshow
+import matplotlib.pyplot as plt
 from drawing_utils import read_classes, draw_boxes, scale_boxes
 from task2 import calculate_iou as iou
 
@@ -217,3 +217,6 @@ out_scores, out_boxes, out_classes = yolo_eval(yolo_outputs, image_shape)
 print('Found {} boxes'.format(len(out_boxes)))
 # Draw bounding boxes on the image
 draw_boxes(image, out_scores, out_boxes, out_classes)
+plt.imshow(image)
+plt.show()
+
